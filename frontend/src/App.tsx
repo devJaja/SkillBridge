@@ -1,0 +1,28 @@
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import './App.css'
+import LandingPage from './pages/LandingPage'
+import OnboardingPage from './pages/OnboardingPage'
+import ClientProfile from './pages/ClientProfile'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import PostJobPage from './pages/PostJobPage'
+import ServiceProviderProfile from './pages/ServiceProviderProfile'
+
+
+function App() {
+  return (
+    <Router>
+      <Header/>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path='/clientprofile' element={<ClientProfile/>}/>
+        <Route path="/post" element={<PostJobPage />} />
+        <Route path='serviceprovider-profile' element={<ServiceProviderProfile/>} />
+      </Routes>
+      <Footer/>
+    </Router>
+  )
+}
+
+export default App
