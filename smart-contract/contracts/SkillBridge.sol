@@ -3,7 +3,6 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-//A unified platform for skill-based service marketplace with escrow functionality
  
 contract SkillBridge is ReentrancyGuard {
 
@@ -93,7 +92,6 @@ contract SkillBridge is ReentrancyGuard {
     mapping(address => uint256) public userRatings;
     mapping(address => uint256) public userRatingCounts;
     
-    // Constants
     uint256 public constant CLIENT_RESPONSE_GRACE_PERIOD = 7 days;
     
     // User Events
@@ -590,6 +588,17 @@ contract SkillBridge is ReentrancyGuard {
             block.timestamp > job.deadline &&
             job.completedAt == 0
         );
+    }
+
+    function releasePayment() external {
+        require(job.status == JobStatus.Completed);
+        require(block.timestamp > job.deadline || job.clientApproved);
+        
+        uint256 platformFee = (job.amount * 250) / 10000; // 2.5%
+        uint256 providerAmount = job.amount - platformFee;
+        
+        payable(job.provider).transfer(providerAmount);
+        payable(platform).transfer(platformFee);
     }
     
     function canAutoRelease(uint256 _jobId) external view returns (bool) {

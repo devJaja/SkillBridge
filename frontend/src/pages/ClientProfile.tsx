@@ -44,22 +44,22 @@ import { useNavigate } from 'react-router-dom';
 
 
 const clientData = {
-  name: "Sarah Johnson",
-  email: "sarah.johnson@techstartup.com",
-  location: "San Francisco, CA, USA",
+  name: "King",
+  email: "king@gmail.com",
+  location: "lagos",
   workType: "Both",
   userType: "Client",
-  skillCategories: ["WebDevelopment", "MobileDevelopment", "UIUXDesign", "GraphicDesign", "Marketing"],
-  joinedDate: "2025-01-15",
+  skillCategories: ["WebDevelopment", "HomeMaintenance", "Construction", "GraphicDesign", "Marketing"],
+  joinedDate: "2025-08-21",
   profileImage: null,
-  company: "TechStartup Inc.",
+  company: "BlockfuseLabs.",
   bio: "Entrepreneur and tech startup founder looking to build innovative digital solutions. I'm passionate about creating products that make a difference.",
-  totalJobsPosted: 8,
-  activeJobs: 3,
-  completedJobs: 5,
-  totalSpent: 25000,
-  averageRating: 4.8,
-  memberSince: "January 2025"
+  totalJobsPosted: 0,
+  activeJobs: 0,
+  completedJobs: 0,
+  totalSpent: 0,
+  averageRating: 0,
+  memberSince: "August 2025"
 };
 
 // Sample jobs data
@@ -72,8 +72,8 @@ const jobsData = [
     deadline: "2025-02-28",
     status: "active",
     applicants: 12,
-    skills: ["WebDevelopment", "UIUXDesign"],
-    postedDate: "2025-01-20"
+    skills: ["HomeMaintenance", "Construction"],
+    postedDate: "2025-08-21"
   },
   {
     id: 2,

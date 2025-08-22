@@ -179,6 +179,63 @@ const OnboardingPage: React.FC = () => {
   };
 
 
+// const handleSubmit = async () => {
+//   try {
+//     const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+//     if (!contractAddress) throw new Error("Missing contract address in .env");
+
+//     // Map form values → enum numbers
+//     const skillEnums = formData.skillCategories.map((id) => skillCategoryMap[id]); 
+//     const workTypeEnum = workTypeMap[formData.workType];
+//     const userTypeEnum = userTypeMap[formData.userType];
+
+//     if (
+//       !formData.name ||
+//       !formData.email ||
+//       !formData.location ||
+//       skillEnums.length === 0 ||
+//       workTypeEnum === undefined ||
+//       userTypeEnum === undefined
+//     ) {
+//       throw new Error("Please fill in all fields");
+//     }
+
+//     console.log("Args going to contract:", {
+//       name: formData.name,
+//       email: formData.email,
+//       skills: skillEnums,
+//       location: formData.location,
+//       workType: workTypeEnum,
+//       userType: userTypeEnum,
+//     });
+
+//     await writeContract({
+//       address: contractAddress as `0x${string}`,
+//       abi,
+//       functionName: "registerUser",
+//       args: [
+//         formData.name,      // string
+//         formData.email,     // string
+//         skillEnums,         // uint8[]
+//         formData.location,  // string
+//         workTypeEnum,       // uint8
+//         userTypeEnum,       // uint8
+//       ],
+//     });
+
+//     console.log(" User registered successfully");
+
+//     // if (formData.userType === "ServiceProvider") {
+//     //   navigate("/providerprofile");
+//     // } else {
+//     //   navigate("/clientprofile");
+//     // }
+//   } catch (err) {
+//     console.error(" Registration failed:", err);
+//     alert(err instanceof Error ? err.message : "Unknown error");
+//   }
+// };
+
 const handleSubmit = async () => {
   try {
     const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
@@ -209,6 +266,16 @@ const handleSubmit = async () => {
       userType: userTypeEnum,
     });
 
+    // Navigate after 5 seconds while transaction is processing
+    setTimeout(() => {
+      if (formData.userType === "ServiceProvider") {
+        navigate("/providerprofile");
+      } else {
+        navigate("/clientprofile");
+      }
+    }, 20000);
+
+    // Execute the contract call in the background
     await writeContract({
       address: contractAddress as `0x${string}`,
       abi,
@@ -223,19 +290,12 @@ const handleSubmit = async () => {
       ],
     });
 
-    console.log(" User registered successfully");
-
-    if (formData.userType === "ServiceProvider") {
-      navigate("/providerprofile");
-    } else {
-      navigate("/clientprofile");
-    }
+    console.log("User registered successfully");
   } catch (err) {
-    console.error(" Registration failed:", err);
+    console.error("Registration failed:", err);
     alert(err instanceof Error ? err.message : "Unknown error");
   }
 };
-
 
   const isStepValid = () => {
     switch (currentStep) {

@@ -46,24 +46,24 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const providerData = {
-  name: "Alex Chen",
-  email: "alex.chen@developer.com",
-  location: "San Francisco, CA, USA",
+  name: "jaja",
+  email: "jaja@gmail.com",
+  location: "lagos",
   workType: "Both",
   userType: "ServiceProvider",
-  skillCategories: ["WebDevelopment", "MobileDevelopment", "BlockchainDev", "DevOps", "UIUXDesign"],
-  joinedDate: "2024-12-10",
+  skillCategories: ["Teacher", "Electrical", "HomeMaintenance", "DevOps", "Plumbing"],
+  joinedDate: "2025-08-21",
   profileImage: null,
-  title: "Full-Stack Developer & Blockchain Expert",
-  bio: "Experienced full-stack developer with 8+ years building scalable web applications and blockchain solutions. Passionate about creating innovative digital products that solve real-world problems.",
+  title: "Full-Time Teacher & HomeMaintenance Expert",
+  bio: "Experienced full-time teacher with 8+ years of experience in Biology and Home maintenance solutions. Passionate about creating innovative digital products that solve real-world problems, also making the world grow.",
   hourlyRate: 85,
-  totalJobsCompleted: 47,
-  activeJobs: 4,
-  totalEarned: 89500,
-  averageRating: 4.9,
+  totalJobsCompleted: 0,
+  activeJobs: 0,
+  totalEarned: 0,
+  averageRating: 9,
   responseTime: "2 hours",
-  completionRate: 98,
-  memberSince: "December 2024"
+  completionRate: 0,
+  memberSince: "August 2025"
 };
 
 // Sample jobs data for service provider
