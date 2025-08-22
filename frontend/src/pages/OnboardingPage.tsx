@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
 import { 
   User, 
   Mail, 
@@ -32,6 +33,9 @@ import {
   Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import abi from "../abi/SkillBridge.json";
+
 import Loggo from "../assets/loggo.png"
 
 // Skill categories with icons matching the smart contract
@@ -54,6 +58,39 @@ const skillCategories = [
   { id: 'LegalServices', name: 'Legal Services', icon: <Scale className="w-5 h-5" />, color: 'from-slate-600 to-gray-600' },
   { id: 'FinancialPlanning', name: 'Financial Planning', icon: <Calculator className="w-5 h-5" />, color: 'from-green-600 to-emerald-600' }
 ];
+
+
+// Must match Solidity enum order exactly
+const skillCategoryMap: Record<string, number> = {
+  WebDevelopment: 0,
+  MobileDevelopment: 1,
+  DataScience: 2,
+  BlockchainDev: 3,
+  DevOps: 4,
+  GraphicDesign: 5,
+  ContentWriting: 6,
+  VideoEditing: 7,
+  UIUXDesign: 8,
+  Construction: 9,
+  Electrical: 10,
+  Plumbing: 11,
+  HomeMaintenance: 12,
+  BusinessStrategy: 13,
+  Marketing: 14,
+  LegalServices: 15,
+  FinancialPlanning: 16,
+};
+
+const workTypeMap: Record<string, number> = {
+  Remote: 0,
+  Physical: 1,
+  Both: 2,
+};
+
+const userTypeMap: Record<string, number> = {
+  ServiceProvider: 0,
+  Client: 1,
+};
 
 const workTypes = [
   { id: 'Remote', name: 'Remote', icon: <Monitor className="w-6 h-6" />, description: 'Work from anywhere in the world' },
@@ -90,6 +127,14 @@ interface FormData {
 }
 
 const OnboardingPage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Wagmi hooks
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     userType: '',
@@ -100,14 +145,17 @@ const OnboardingPage: React.FC = () => {
     skillCategories: []
   });
 
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    setTimeout(() => {
-      navigate("/clientprofile")
-    }, 2000)
-  }
   const totalSteps = 4;
+
+  // Navigate to profile page after successful transaction
+  React.useEffect(() => {
+    if (isConfirmed) {
+      setTimeout(() => {
+        navigate("/clientprofile");
+      }, 2000);
+    }
+  }, [isConfirmed, navigate]);
+  
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -130,16 +178,70 @@ const OnboardingPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    alert('Registration completed! Welcome to SkillBridge.');
-  };
+
+const handleSubmit = async () => {
+  try {
+    const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+    if (!contractAddress) throw new Error("Missing contract address in .env");
+
+    // Map form values → enum numbers
+    const skillEnums = formData.skillCategories.map((id) => skillCategoryMap[id]); 
+    const workTypeEnum = workTypeMap[formData.workType];
+    const userTypeEnum = userTypeMap[formData.userType];
+
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.location ||
+      skillEnums.length === 0 ||
+      workTypeEnum === undefined ||
+      userTypeEnum === undefined
+    ) {
+      throw new Error("Please fill in all fields");
+    }
+
+    console.log("Args going to contract:", {
+      name: formData.name,
+      email: formData.email,
+      skills: skillEnums,
+      location: formData.location,
+      workType: workTypeEnum,
+      userType: userTypeEnum,
+    });
+
+    await writeContract({
+      address: contractAddress as `0x${string}`,
+      abi,
+      functionName: "registerUser",
+      args: [
+        formData.name,      // string
+        formData.email,     // string
+        skillEnums,         // uint8[]
+        formData.location,  // string
+        workTypeEnum,       // uint8
+        userTypeEnum,       // uint8
+      ],
+    });
+
+    console.log(" User registered successfully");
+
+    if (formData.userType === "ServiceProvider") {
+      navigate("/providerprofile");
+    } else {
+      navigate("/clientprofile");
+    }
+  } catch (err) {
+    console.error(" Registration failed:", err);
+    alert(err instanceof Error ? err.message : "Unknown error");
+  }
+};
+
 
   const isStepValid = () => {
     switch (currentStep) {
       case 1: return formData.userType !== '';
-      case 2: return formData.name && formData.email;
-      case 3: return formData.location && formData.workType;
+      case 2: return formData.name.trim() !== '' && formData.email.trim() !== '';
+      case 3: return formData.location.trim() !== '' && formData.workType !== '';
       case 4: return formData.skillCategories.length > 0;
       default: return false;
     }
@@ -152,6 +254,19 @@ const OnboardingPage: React.FC = () => {
     4: formData.userType === 'ServiceProvider' ? 'Your Expertise' : 'Service Needs'
   };
 
+  // Show error message if there's a transaction error
+  const getErrorMessage = () => {
+    if (error) {
+      if (error.message.includes('User rejected')) {
+        return 'Transaction was rejected by user';
+      }
+      if (error.message.includes('insufficient funds')) {
+        return 'Insufficient funds for transaction';
+      }
+      return `Transaction failed: ${error.message}`;
+    }
+    return null;
+  };
   return (
     <div className="min-h-screen flex justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className='w-full max-w-7xl'>
@@ -501,17 +616,22 @@ const OnboardingPage: React.FC = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={handleClick}
-                    // disabled={!isStepValid()}
-                    className={`flex items-center space-x-2 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 ${
-                      isStepValid()
-                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-xl hover:scale-105 shadow-lg'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    <span>Complete Registration</span>
-                    <Star className="w-5 h-5" />
-                  </button>
+  onClick={handleSubmit}
+  disabled={!isStepValid() || isPending || isConfirming}
+  className={`flex items-center space-x-2 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 ${
+    isStepValid() && !isPending && !isConfirming
+      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-xl hover:scale-105 shadow-lg'
+      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+  }`}
+>
+  {isPending && <span>Submitting…</span>}
+  {isConfirming && <span>Waiting for confirmation…</span>}
+  {isConfirmed && <span>Registered!</span>}
+  {!isPending && !isConfirming && !isConfirmed && <span>Complete Registration</span>}
+  <Star className="w-5 h-5" />
+</button>
+
+
                 )}
               </div>
             </div>

@@ -7,6 +7,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import PostJobPage from './pages/PostJobPage'
 import ServiceProviderProfile from './pages/ServiceProviderProfile'
+import JobFundingPage from './pages/JobFundingPage'
 
 
 function App() {
@@ -18,7 +19,8 @@ function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path='/clientprofile' element={<ClientProfile/>}/>
         <Route path="/post" element={<PostJobPage />} />
-        <Route path='serviceprovider-profile' element={<ServiceProviderProfile/>} />
+        <Route path='providerprofile' element={<ServiceProviderProfile/>} />
+        <Route path='job-funding' element={<JobFundingPage/>} />
       </Routes>
       <Footer/>
     </Router>
